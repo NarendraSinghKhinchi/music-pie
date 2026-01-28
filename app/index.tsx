@@ -6,6 +6,7 @@ import { MoonStarIcon, StarIcon, SunIcon } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
 import { Image, type ImageStyle, View } from 'react-native';
+import TestScreen from './TestScreen';
 
 const LOGO = {
   light: require('@/assets/images/react-native-reusables-light.png'),
@@ -40,17 +41,7 @@ export default function Screen() {
           </Text>
         </View>
         <View className="flex-row gap-2">
-          <Link href="https://reactnativereusables.com" asChild>
-            <Button>
-              <Text>Browse the Docs</Text>
-            </Button>
-          </Link>
-          <Link href="https://github.com/founded-labs/react-native-reusables" asChild>
-            <Button variant="ghost">
-              <Text>Star the Repo</Text>
-              <Icon as={StarIcon} />
-            </Button>
-          </Link>
+          <TestScreen />
         </View>
       </View>
     </>
