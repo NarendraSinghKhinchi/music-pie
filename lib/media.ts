@@ -2,8 +2,8 @@ import * as MediaLibrary from "expo-media-library";
 
 export async function getAudioFiles() {
   const permission = await MediaLibrary.requestPermissionsAsync();
-const perm = await MediaLibrary.requestPermissionsAsync();
-console.log(perm.granted);
+  const perm = await MediaLibrary.requestPermissionsAsync();
+
 
   if (!permission.granted) {
     throw new Error("Media permission not granted");
