@@ -4,6 +4,7 @@ import { Text } from "@/components/ui/text";
 
 import { getAudioFiles } from "@/lib/media";
 import { usePlayer } from "@/store/player-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LibraryScreen() {
   const [tracks, setTracks] = useState<any[]>([]);
@@ -15,6 +16,7 @@ export default function LibraryScreen() {
 
 
   return (
+    <SafeAreaView className="flex-1">
     <FlatList
       data={tracks}
       keyExtractor={(item) => item.id}
@@ -29,5 +31,6 @@ export default function LibraryScreen() {
       )
       }}
     />
+    </SafeAreaView>
   );
 }
