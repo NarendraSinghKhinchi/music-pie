@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Audio } from "expo-av";
+import { createAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 
 type Track = {
   id: string;
   uri: string;
   filename?: string;
-  duration?: number;
 };
 
 type PlayerContextType = {
@@ -23,9 +22,10 @@ type PlayerContextType = {
 const PlayerContext = createContext<PlayerContextType | null>(null);
 
 export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
   const queueRef = useRef<Track[]>([]);
   const indexRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -33,61 +33,63 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    Audio.setAudioModeAsync({
-      staysActiveInBackground: true,
-      playsInSilentModeIOS: true,
-      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
-    });
+    return () => {
+      playerRef.current?.remove();
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, []);
 
+  const startTracking = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
+      if(!playerRef.current)return;
+
+      const status = useAudioPlayerStatus( playerRef.current);
+      if (!status?.isLoaded) return;
+
+      setPosition(status.currentTime);
+      setDuration(status.duration);
+      setIsPlaying(status.playing);
+
+      if (status.didJustFinish) {
+        next();
+      }
+    }, 500);
+  };
+
   const load = async (track: Track) => {
-    if (soundRef.current) {
-      await soundRef.current.unloadAsync();
-    }
+    playerRef.current?.remove();
 
-    const { sound, status } = await Audio.Sound.createAsync(
-      { uri: track.uri },
-      { shouldPlay: true },
-      onStatus
-    );
+    const player = createAudioPlayer({ uri: track.uri });
+    player.play();
 
-    soundRef.current = sound;
+    playerRef.current = player;
     setCurrentTrack(track);
     setIsPlaying(true);
 
-    if (status.isLoaded) {
-      setDuration(status.durationMillis ?? 0);
-    }
-  };
-
-  const onStatus = (status: any) => {
-    if (!status.isLoaded) return;
-    setPosition(status.positionMillis ?? 0);
-    setIsPlaying(status.isPlaying);
-
-    if (status.didJustFinish) {
-      next();
-    }
+    startTracking();
   };
 
   const play = async (track: Track, queue: Track[] = []) => {
-    queueRef.current = queue.length ? queue : [track];
-    indexRef.current = queue.findIndex(t => t.id === track.id);
-    await load(track);
+    const finalQueue = queue.length ? queue : [track];
+    queueRef.current = finalQueue;
+    indexRef.current = Math.max(
+      0,
+      finalQueue.findIndex(t => t.id === track.id)
+    );
+    await load(finalQueue[indexRef.current]);
   };
 
   const toggle = async () => {
-    if (!soundRef.current) return;
-    const status = await soundRef.current.getStatusAsync();
-    status.isPlaying
-      ? await soundRef.current.pauseAsync()
-      : await soundRef.current.playAsync();
+    const player = playerRef.current;
+    if (!player) return;
+    player.playing ? player.pause() : player.play();
   };
 
   const seek = async (ms: number) => {
-    if (!soundRef.current) return;
-    await soundRef.current.setPositionAsync(ms);
+    playerRef.current?.seekTo(ms);
+    setPosition(ms);
   };
 
   const next = async () => {
@@ -99,7 +101,8 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const prev = async () => {
     if (!queueRef.current.length) return;
     indexRef.current =
-      (indexRef.current - 1 + queueRef.current.length) % queueRef.current.length;
+      (indexRef.current - 1 + queueRef.current.length) %
+      queueRef.current.length;
     await load(queueRef.current[indexRef.current]);
   };
 

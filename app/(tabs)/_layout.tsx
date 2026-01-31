@@ -1,10 +1,11 @@
-import { Tabs } from "expo-router";
 import { Icon } from "@/components/ui/icon";
-import { LibraryIcon, PlayCircleIcon } from "lucide-react-native";
+import { Tabs } from "expo-router";
+import { LibraryIcon, PlayCircleIcon, Settings } from "lucide-react-native";
 
 const TAB_ICONS = {
   library: LibraryIcon,
   "now-playing": PlayCircleIcon,
+  "settings": Settings
 } as const;
 
 export default function TabsLayout() {
@@ -18,7 +19,7 @@ export default function TabsLayout() {
           fontSize: 12,
         },
         tabBarStyle: {
-          height: 60,
+          height: 70,
         },
         tabBarIcon: ({ color, size }) => {
           const IconComponent =
@@ -38,6 +39,11 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="now-playing"
         options={{ title: "Now Playing" }}
+      />
+
+      <Tabs.Screen
+        name="settings"
+        options={{ title: "settings" }}
       />
     </Tabs>
   );
