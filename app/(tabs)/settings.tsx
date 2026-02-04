@@ -18,7 +18,7 @@ export default function SettingsScreen() {
     const { colorScheme, toggleColorScheme } = useColorScheme();
 
     return (
-        <SafeAreaView className="flex-1 px-4 py-8">
+        <SafeAreaView className="flex-1 px-4 py-8 bg-[#badcee]">
             <Card className="w-full max-w-sm">
                 <CardHeader className="flex-row">
                     <View className="flex-1 gap-1.5">

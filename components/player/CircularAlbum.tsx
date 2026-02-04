@@ -1,21 +1,22 @@
-import { Image, View } from "react-native"
+import { Image, View, useWindowDimensions } from "react-native"
 
 interface Props {
   coverUrl: string
 }
 
 export const CircularAlbum = ({ coverUrl }: Props) => {
+  const { width } = useWindowDimensions()
+
   return (
-    <View className="items-end mt-10">
-      <View className="w-64 h-64 rounded-full bg-sky-100 shadow-2xl shadow-sky-300 items-center justify-center">
-        <View className="w-52 h-52 rounded-full overflow-hidden">
-          <Image
-            source={{ uri: coverUrl }}
-            className="w-full h-full"
-            resizeMode="cover"
-          />
-        </View>
-      </View>
+    <View className="items-end">
+      <Image
+        source={require("@/assets/images/playerr.png")}
+        style={{
+          width: width * 0.5,   // 50% of device width
+          aspectRatio: 1 / 2.3,   // adjust to your image ratio
+        }}
+        resizeMode="cover"
+      />
     </View>
   )
 }
